@@ -285,7 +285,6 @@ class ClassBox extends React.Component {
     }
 
     getHighestClassZIndex = () => {
-        this.shouldComponentUpdate
         let max = 0;
         this.state.classes.map((e) => { if (e.z > max) max = e.z });
 
