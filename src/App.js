@@ -188,9 +188,6 @@ class App extends Component {
     interaction_blocked = false;
 
     disableEdits = (e, bool) => {
-
-        /*  if (Array.from(e.target.classList).includes('class-element-group-new_element-button')) {
-             //ha, az új gombra kattintott...*/
         let isnewButton = Array.from(e.target.classList).includes('class-element-group-new_element-button')
         if (isnewButton) {
             this.newButton = e.target;
@@ -220,7 +217,6 @@ class App extends Component {
                         if (e && e.edit) {
                             this.state.model.canvas.edit_element_id = null;
                             console.log("EDITED FOUND ")
-
                             e.edit = false;
                             e.save();
                             e.forceUpdate();

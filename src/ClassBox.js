@@ -231,6 +231,8 @@ class ClassBox extends React.Component {
         this.resizeExistingClass(e);
 
     }
+    /**Amikor a felhasználó Mozgatható elemre vagy a Canvas-ra kattint,
+         * akkor menti a kattintott dolog aktuális helyét és méreteit*/
     setStoredTargets = (e) => {
         if (this.targetInner != undefined) {
             let dclass = e.target.closest('.d-class');
@@ -253,6 +255,9 @@ class ClassBox extends React.Component {
             return false;
         }
     }
+    /**Amikor a felhasználó éppen átméretez,
+    mindig pillanatnyi méretezés előtti állapotát menti.
+     **/
     setTargets = (e) => {
         let dclass = e.target.closest('.d-class');
         if (!dclass) {
@@ -280,6 +285,7 @@ class ClassBox extends React.Component {
     }
 
     getHighestClassZIndex = () => {
+        this.shouldComponentUpdate
         let max = 0;
         this.state.classes.map((e) => { if (e.z > max) max = e.z });
 
@@ -288,6 +294,8 @@ class ClassBox extends React.Component {
         }
         return max + 1;
     }
+
+
     updateClassSelection = () => {
         this.state.classes.map((clas) => {
             this.findClassDomById(clas.id).classList.remove('d-class-selected');
