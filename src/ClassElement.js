@@ -12,29 +12,13 @@ class ClassElement extends Component {
     }
     parentClass;
     deleteSelfFromParent = () => {
-
-
-
-        /*  this.state.parent.elements.forEach((element, ind) => {
-             if (element.id == this.state.id) {
-                 console.log(element.id, " === ", this.state.id)
-                 this.state.parent.elements.splice(ind, 1);
-                 return;
-             }
-         }); */
         this.props.delete(this.state.id);
-        //delete this;
-        //  this.state.parent.elements = this.state.parent.elements.filter((elem) => elem.id != this.state.id);
-
     }
     force = () => {
         this.forceUpdate();
     }
     saveEvent = () => {
         if (this.state.istitle) {
-            /* if (this.state.name == ''{
-                this.state.name=
-            }) */
         }
         else if (this.state.name == '') {
             this.deleteSelfFromParent();
@@ -43,28 +27,19 @@ class ClassElement extends Component {
         this.forceUpdate();
     }
 
-
     onClick = (e) => {
-
-        if (this.state.istitle) {
-            this.state.parent.edit = true;
-            this.state.parent.canvas.edit_classTitle_id = this.state.parent.id;
-
-        } else {
-            this.state.edit = true;
-            this.targetDOM = e.target;
-            this.state.parent.parent.canvas.edit_element_id = this.state.id;
-        }
+        this.state.edit = true;
+        this.targetDOM = e.target;
+        this.state.parent.parent.canvas.edit_element_id = this.state.id;
         this.forceUpdate(() => {
             let inputDOM = document.querySelector('#editor-input');
             if (inputDOM) {
-                this.inputDOM = inputDOM
+                this.inputDOM = inputDOM;
                 inputDOM.focus();
             }
         })
-        console.log(this.state.parent)
     }
-    onInput = (e) => {
+    setVisibility = (e) => {
         let vis = '+';
         let l = false;
         if (e.target.value[0] == '+' ||
@@ -75,18 +50,26 @@ class ClassElement extends Component {
             l = true;
             vis = e.target.value[0];
         }
-
-        let str = e.target.value.split(':');
         this.state.visibility = vis;
-        this.state.name = str[0].trim();
+        return l;
+
+    }
+    setNameAndType = (e, l) => {
+        let splitted = e.target.value.split(':');
+        this.state.name = splitted[0].trim();
         if (l) {
             this.state.name = this.state.name.substr(1);
         }
-        if (str[1])
-            this.state.type = str[1].trim();
+        if (splitted[1])
+            this.state.type = splitted[1].trim();
         else {
             this.state.type = ''
         }
+    }
+    onInput = (e) => {
+        let isVisibilitySymbolWritten = this.setVisibility(e);
+
+        this.setNameAndType(e, isVisibilitySymbolWritten)
         this.forceUpdate();
     }
     showedText = '';

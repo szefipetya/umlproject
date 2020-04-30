@@ -71,10 +71,7 @@ class ClassElementGroup extends Component {
         let inputDOM = document.querySelector('#editor-input');
         if (!inputDOM)
             this.pushNewElement('', '', '');
-
         this.forceUpdate();
-
-
     }
     render() {
         return (

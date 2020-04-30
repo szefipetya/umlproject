@@ -81,144 +81,155 @@ class ClassBox extends React.Component {
         let cls = this.state.classes.filter((e) => { return e.id == id });
         return cls;
     }
-    onMouseMove = (e) => {
-        if (this.drawedClassPositionSpecified && this.state.canvas.drawMode == 'class') {
-            let ebox = e.target.closest('.edit-box');
-            if (ebox) {
-                var rect = ebox.getBoundingClientRect();
-                var x = e.clientX - rect.left; //x position within the element.
-                var y = e.clientY - rect.top;
-
-                this.findClassById(this.drawedClassId)[0].width_scaled = x - this.drawedClassX;
-                this.findClassById(this.drawedClassId)[0].height_scaled = y - this.drawedClassY;
-                unFocus();
-                this.forceUpdate();
-            }
+    resizeExistingClass = (e) => {
+        let nohover = 0;
+        if (this.holdingAny && !this.targetResizeGrabXR && !this.targetResizeGrabYR
+            && !this.targetResizeGrabXL && !this.targetResizeGrabYL && this.targetClass != undefined) {
+            unFocus();
+            this.targetClass.posx_scaled = e.clientX - this.targetRect.left - this.xdiff
+            this.targetClass.posy_scaled = e.clientY - this.targetRect.top - this.ydiff
+            this.targetClass.posx_scaled = round(this.targetClass.posx_scaled, this.state.canvas.gridSize)
+            this.targetClass.posy_scaled = round(this.targetClass.posy_scaled, this.state.canvas.gridSize)
+            this.forceUpdate();
             return;
         }
-        if (!this.dclass || e.target.className == 'edit-box') {
-            if (this.holding) {
-                if (this.clipDOM) {
-                    this.state.canvas.posx = e.clientX - this.clipDOM.getBoundingClientRect().left - this.xdiff;
-                    this.state.canvas.posy = e.clientY - this.clipDOM.getBoundingClientRect().top - this.ydiff;
-                    this.forceUpdate();
-                    /* this.setState({ canvas }) */
-                    return;
-                }
-            }
+        //resize xr
+        if (this.setTargets(e) && this.xdiff >= this.targetClass.width_scaled - this.resizePadding &&
+            this.xdiff <= this.targetClass.width_scaled) {
+            document.getElementById('root').style.cursor = 'ew-resize';
+            this.targetResizeHoverXR = true;
+        } else {
+            nohover++;
         }
-        //CLASS//
-        if (true) {
+        if (this.targetResizeGrabXR && this.targetClass_stored) {
+            unFocus();
+            this.targetClass_stored.width_scaled = this.xdiff_rel_to_stored + (this.targetWidth_stored - this.stored_xdiff);
+            this.targetDOM.style.borderRight = this.borderString_scale;
+            this.forceUpdate();
+            //return;
+        }
+        //resize xl
+        if (this.setTargets(e) && this.xdiff <= this.resizePadding &&
+            this.xdiff >= 0) {
+            document.getElementById('root').style.cursor = 'ew-resize';
+            this.targetResizeHoverXL = true;
+        } else {
+            nohover++;
+        }
+        if (this.targetResizeGrabXL && this.targetClass_stored) {
+            unFocus();
 
-            let nohover = 0;
-            if (this.holdingAny && !this.targetResizeGrabXR && !this.targetResizeGrabYR
-                && !this.targetResizeGrabXL && !this.targetResizeGrabYL && this.targetClass != undefined) {
-                unFocus();
-                this.targetClass.posx_scaled = e.clientX - this.targetRect.left - this.xdiff
-                this.targetClass.posy_scaled = e.clientY - this.targetRect.top - this.ydiff
-                this.targetClass.posx_scaled = round(this.targetClass.posx_scaled, this.state.canvas.gridSize)
-                this.targetClass.posy_scaled = round(this.targetClass.posy_scaled, this.state.canvas.gridSize)
-                this.forceUpdate();
-                return;
-            }
-            //resize xr
-            if (this.setTargets(e) && this.xdiff >= this.targetClass.width_scaled - this.resizePadding &&
-                this.xdiff <= this.targetClass.width_scaled) {
-                document.getElementById('root').style.cursor = 'ew-resize';
-                this.targetResizeHoverXR = true;
-            } else {
-                nohover++;
-            }
-            if (this.targetResizeGrabXR && this.targetClass_stored) {
-                unFocus();
-                this.targetClass_stored.width_scaled = this.xdiff_rel_to_stored + (this.targetWidth_stored - this.stored_xdiff);
-                this.targetDOM.style.borderRight = this.borderString_scale;
-                this.forceUpdate();
-                //return;
-            }
-            //resize xl
-            if (this.setTargets(e) && this.xdiff <= this.resizePadding &&
-                this.xdiff >= 0) {
-                document.getElementById('root').style.cursor = 'ew-resize';
-                this.targetResizeHoverXL = true;
-            } else {
-                nohover++;
-            }
-            if (this.targetResizeGrabXL && this.targetClass_stored) {
-                unFocus();
+            this.targetClass_stored.posx_scaled = e.clientX - this.targetRect.left - this.stored_xdiff;
+            let mx = e.clientX - this.targetRect.left;
+            this.targetClass_stored.width_scaled = this.targetWidth_stored - (mx - this.stored_mx);
+            this.targetDOM.style.borderLeft = this.borderString_scale;
+            this.targetClass_stored.posx_scaled = round(this.targetClass_stored.posx_scaled, this.state.canvas.gridSize)
+        }
+        //  }
+        //resize yr
+        if (this.setTargets(e)
+            && this.ydiff >= this.targetClass.height_scaled - this.resizePadding &&
+            this.ydiff <= this.targetClass.height_scaled) {
+            document.getElementById('root').style.cursor = 'ns-resize';
+            this.targetResizeHoverYR = true;
+        } else {
+            nohover++;
+        }
+        if (this.targetResizeGrabYR && this.targetClass_stored) {
+            unFocus();
+            this.targetClass_stored.height_scaled = this.ydiff_rel_to_stored + (this.targetHeight_stored - this.stored_ydiff);
+            this.targetDOM.style.borderBottom = this.borderString_scale;
+        }
 
-                this.targetClass_stored.posx_scaled = e.clientX - this.targetRect.left - this.stored_xdiff;
-                let mx = e.clientX - this.targetRect.left;
-                this.targetClass_stored.width_scaled = this.targetWidth_stored - (mx - this.stored_mx);
-                this.targetDOM.style.borderLeft = this.borderString_scale;
-                this.targetClass_stored.posx_scaled = round(this.targetClass_stored.posx_scaled, this.state.canvas.gridSize)
-            }
-            //  }
-            //resize yr
-            if (this.setTargets(e)
-                && this.ydiff >= this.targetClass.height_scaled - this.resizePadding &&
-                this.ydiff <= this.targetClass.height_scaled) {
-                document.getElementById('root').style.cursor = 'ns-resize';
-                this.targetResizeHoverYR = true;
-            } else {
-                nohover++;
-            }
-            if (this.targetResizeGrabYR && this.targetClass_stored) {
-                unFocus();
-                this.targetClass_stored.height_scaled = this.ydiff_rel_to_stored + (this.targetHeight_stored - this.stored_ydiff);
-                this.targetDOM.style.borderBottom = this.borderString_scale;
-            }
+        //  }
 
-            //  }
+        //resize yl
+        if (this.setTargets(e) && this.ydiff <= this.resizePadding &&
+            this.ydiff >= 0) {
+            document.getElementById('root').style.cursor = 'ns-resize';
+            this.targetResizeHoverYL = true;
+        } else {
+            nohover++;
+        }
+        if (this.targetResizeGrabYL && this.targetClass_stored) {
+            unFocus();
+            this.targetClass_stored.posy_scaled = e.clientY - this.targetRect.top - this.stored_ydiff;
+            let my = e.clientY - this.targetRect.top;
+            this.targetClass_stored.height_scaled = this.targetHeight_stored - (my - this.stored_my);
+            this.targetDOM.style.borderTop = this.borderString_scale;
+            this.targetClass_stored.posy_scaled = round(this.targetClass_stored.posy_scaled, this.state.canvas.gridSize)
+            // return;
+        }
+        if (nohover == 4) {
+            document.getElementById('root').style.cursor = 'default';
 
-            //resize yl
-            if (this.setTargets(e) && this.ydiff <= this.resizePadding &&
-                this.ydiff >= 0) {
-                document.getElementById('root').style.cursor = 'ns-resize';
-                this.targetResizeHoverYL = true;
-            } else {
-                nohover++;
-            }
-            if (this.targetResizeGrabYL && this.targetClass_stored) {
-                unFocus();
-                this.targetClass_stored.posy_scaled = e.clientY - this.targetRect.top - this.stored_ydiff;
-                let my = e.clientY - this.targetRect.top;
-                this.targetClass_stored.height_scaled = this.targetHeight_stored - (my - this.stored_my);
-                this.targetDOM.style.borderTop = this.borderString_scale;
-                this.targetClass_stored.posy_scaled = round(this.targetClass_stored.posy_scaled, this.state.canvas.gridSize)
-                // return;
-            }
-            if (nohover == 4) {
-                document.getElementById('root').style.cursor = 'default';
+        }
 
-            }
+        //  }
+        if (this.targetResizeHoverXR && this.targetResizeHoverYR) {
+            document.getElementById('root').style.cursor = 'nw-resize';
+        }
+        if (this.targetResizeHoverXR && this.targetResizeHoverYL) {
+            document.getElementById('root').style.cursor = 'ne-resize';
+        }
+        if (this.targetResizeHoverXL && this.targetResizeHoverYR) {
+            document.getElementById('root').style.cursor = 'sw-resize';
+        }
+        if (this.targetResizeHoverXL && this.targetResizeHoverYL) {
+            document.getElementById('root').style.cursor = 'nw-resize';
+        }
+        this.targetResizeHoverXR = false;
+        this.targetResizeHoverYR = false;
+        this.targetResizeHoverXL = false;
+        this.targetResizeHoverYL = false;
+        if (this.targetClass != undefined) {
+            this.targetClass.width_scaled = round(this.targetClass.width_scaled, this.state.canvas.gridSize)
+            this.targetClass.height_scaled = round(this.targetClass.height_scaled, this.state.canvas.gridSize)
+            this.corrigateTargetClassDimensions();
+        }
+        //   this.corrigateCanvasPosition();
+        //  this.corrigateTargetClassPosition();
+        this.forceUpdate();
+    }
+    resizeDrawedClass = (e) => {
+        let ebox = e.target.closest('.edit-box');
+        if (ebox) {
+            var rect = ebox.getBoundingClientRect();
+            var x = e.clientX - rect.left; //x position within the element.
+            var y = e.clientY - rect.top;
 
-            //  }
-            if (this.targetResizeHoverXR && this.targetResizeHoverYR) {
-                document.getElementById('root').style.cursor = 'nw-resize';
-            }
-            if (this.targetResizeHoverXR && this.targetResizeHoverYL) {
-                document.getElementById('root').style.cursor = 'ne-resize';
-            }
-            if (this.targetResizeHoverXL && this.targetResizeHoverYR) {
-                document.getElementById('root').style.cursor = 'sw-resize';
-            }
-            if (this.targetResizeHoverXL && this.targetResizeHoverYL) {
-                document.getElementById('root').style.cursor = 'nw-resize';
-            }
-            this.targetResizeHoverXR = false;
-            this.targetResizeHoverYR = false;
-            this.targetResizeHoverXL = false;
-            this.targetResizeHoverYL = false;
-            if (this.targetClass != undefined) {
-                this.targetClass.width_scaled = round(this.targetClass.width_scaled, this.state.canvas.gridSize)
-                this.targetClass.height_scaled = round(this.targetClass.height_scaled, this.state.canvas.gridSize)
-                this.corrigateTargetClassDimensions();
-            }
-            //   this.corrigateCanvasPosition();
-            //  this.corrigateTargetClassPosition();
+            this.findClassById(this.drawedClassId)[0].width_scaled = x - this.drawedClassX;
+            this.findClassById(this.drawedClassId)[0].height_scaled = y - this.drawedClassY;
+            unFocus();
             this.forceUpdate();
         }
+    }
+    repositionCanvas = (e) => {
+        if (this.holding) {
+            if (this.clipDOM) {
+                this.state.canvas.posx = e.clientX - this.clipDOM.getBoundingClientRect().left - this.xdiff;
+                this.state.canvas.posy = e.clientY - this.clipDOM.getBoundingClientRect().top - this.ydiff;
+                this.forceUpdate();
+                /* this.setState({ canvas }) */
+                return true;
+            }
+        }
+        return false;
+    }
+    onMouseMove = (e) => {
+        e.persist();
+        //ha, éppen class-t rajzol az illető
+        if (this.drawedClassPositionSpecified && this.state.canvas.drawMode == 'class') {
+            this.resizeDrawedClass(e);
+            return;
+        }
+        //ha a 'canvas-ra kattintott, és úgy mozgat
+        if (!this.dclass || e.target.className == 'edit-box') {
+            if (this.repositionCanvas(e)) return;
+        }
+        //CLASS//
+        this.resizeExistingClass(e);
+
     }
     setStoredTargets = (e) => {
         if (this.targetInner != undefined) {
@@ -443,7 +454,6 @@ class ClassBox extends React.Component {
         if (this.state.canvas.posy + this.state.canvas.height < clip.height) {
             this.state.canvas.posy = clip.height - this.state.canvas.height;
             c++;
-
         }
         if (c > 0) {
             this.ebox = document.querySelector('.edit-box');
